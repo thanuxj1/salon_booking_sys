@@ -218,16 +218,21 @@ input, select, textarea {
 .topbar-left { display: flex; align-items: center; gap: 16px; }
 
 .hamburger {
-  background: none;
-  border: none;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
   font-size: 1.3rem;
   color: var(--text-secondary);
-  padding: 4px;
-  border-radius: var(--radius-xs);
-  transition: color var(--transition);
-  display: none; /* Hidden by default, shown on mobile */
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+  position: relative;
+  z-index: 120; /* Ensure it's above everything including the overlay */
 }
-.hamburger:hover { color: var(--text-primary); }
+.hamburger:hover { color: var(--text-primary); border-color: var(--accent); background: var(--bg-card); }
 
 .page-title h2 {
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -867,12 +872,15 @@ input, select, textarea {
   inset: 0;
   background: rgba(0,0,0,0.7);
   backdrop-filter: blur(8px);
-  z-index: 95;
+  z-index: 110;
   opacity: 0;
-  visibility: hidden;
-  transition: all 0.4s ease;
+  display: none; /* Physically remove from click flow when closed */
+  transition: opacity 0.4s ease;
 }
-.sidebar-overlay.active { opacity: 1; visibility: visible; }
+.sidebar-overlay.active { 
+  display: block;
+  opacity: 1; 
+}
 
 @media (max-width: 1100px) {
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
