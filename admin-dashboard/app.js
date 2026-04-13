@@ -93,8 +93,9 @@ function showSection(name) {
   document.getElementById('pageSubtitle').textContent = sub;
 
   // Close mobile sidebar
-  if (window.innerWidth <= 768) {
-    document.getElementById('sidebar').classList.remove('mobile-open');
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar.classList.contains('mobile-open')) {
+    toggleSidebar();
   }
 
   return false;
@@ -104,8 +105,11 @@ function showSection(name) {
 function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
   const main    = document.querySelector('.main-content');
+  const overlay = document.getElementById('sidebarOverlay');
+  
   if (window.innerWidth <= 768) {
     sidebar.classList.toggle('mobile-open');
+    overlay.classList.toggle('active');
   } else {
     sidebar.classList.toggle('collapsed');
     main.classList.toggle('full-width');

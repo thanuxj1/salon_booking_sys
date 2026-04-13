@@ -843,23 +843,88 @@ input, select, textarea {
 .toast.info    { border-left: 3px solid var(--accent); }
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 90;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition);
+}
+.sidebar-overlay.active { opacity: 1; pointer-events: auto; }
+
 @media (max-width: 1100px) {
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
-  :root { --sidebar-w: 240px; }
-  .sidebar { transform: translateX(calc(-1 * var(--sidebar-w))); }
-  .sidebar.mobile-open { transform: translateX(0); }
+  :root { 
+    --sidebar-w: 280px; 
+    --topbar-h: 64px;
+  }
+  
+  html { font-size: 14px; }
+
+  .sidebar { 
+    transform: translateX(calc(-1 * var(--sidebar-w))); 
+    box-shadow: none;
+  }
+  .sidebar.mobile-open { 
+    transform: translateX(0); 
+    box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+  }
+  
   .main-content { margin-left: 0 !important; }
-  .section { padding: 16px; }
-  .stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-  .form-grid { grid-template-columns: 1fr; }
-  .search-bar input { width: 140px; }
+  
+  .topbar { padding: 0 16px; }
+  .topbar-right { gap: 8px; }
+  
+  .search-bar { padding: 6px 12px; }
+  .search-bar input { width: 120px; font-size: 0.85rem; }
+  
+  .export-btn { padding: 8px 14px; font-size: 0.8rem; }
+  .export-btn span:last-child { display: none; } /* Hide "Excel" text */
+
+  .section { padding: 20px 16px; gap: 20px; }
+  
+  .stats-grid { gap: 12px; }
+  .stat-card { padding: 16px; gap: 12px; }
+  .stat-icon { width: 44px; height: 44px; font-size: 1.5rem; }
+  .stat-value { font-size: 1.4rem; }
+  
+  .card-header { padding: 16px; }
+  
+  .table-wrapper {
+    margin: 0 -16px;
+    padding: 0 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .table-wrapper::after {
+    content: '→ scroll';
+    display: block;
+    text-align: right;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    padding: 8px 0;
+    text-transform: uppercase;
+  }
+  
+  .form-grid { grid-template-columns: 1fr; gap: 16px; }
+  .form-card form { padding: 16px; }
+  
+  .calendar-grid { padding: 0 0 12px; }
+  .cal-day { min-height: 60px; }
 }
 
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr; }
-  .topbar { padding: 0 16px; gap: 8px; }
-  .export-btn span:last-child { display: none; }
+  
+  .topbar-left { gap: 8px; }
+  .page-title span { display: none; } /* Hide subtitle on very small screens */
+  
+  .search-bar { display: none; } /* Hide search bar on tiny screens to save space (use global search elsewhere if needed) */
+  
+  .modal { max-width: 100%; border-radius: var(--radius) var(--radius) 0 0; position: absolute; bottom: 0; }
 }
