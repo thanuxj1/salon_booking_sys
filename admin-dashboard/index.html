@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Glamour Salon — Admin Dashboard for managing WhatsApp appointments" />
+  <title>Glamour Salon — Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-icon">💇‍♀️</span>
+        <div class="logo-text">
+          <h1>Glamour</h1>
+          <span>Salon Admin</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" id="nav-dashboard" onclick="showSection('dashboard')">
+        <span class="nav-icon">📊</span>
+        <span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-item" id="nav-appointments" onclick="showSection('appointments')">
+        <span class="nav-icon">📅</span>
+        <span>Appointments</span>
+      </a>
+      <a href="#" class="nav-item" id="nav-calendar" onclick="showSection('calendar')">
+        <span class="nav-icon">🗓️</span>
+        <span>Calendar</span>
+      </a>
+      <a href="#" class="nav-item" id="nav-add" onclick="showSection('add')">
+        <span class="nav-icon">➕</span>
+        <span>New Booking</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+        <span id="themeIcon">🌙</span>
+        <span id="themeLabel">Dark Mode</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ────────────────────────────────────────────────── -->
+  <main class="main-content">
+
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle sidebar">☰</button>
+        <div class="page-title">
+          <h2 id="pageTitle">Dashboard</h2>
+          <span id="pageSubtitle">Welcome back! Here's today's overview.</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="globalSearch" placeholder="Search customers…" oninput="handleSearch(this.value)" />
+        </div>
+        <button class="export-btn" id="exportBtn" onclick="exportExcel()">
+          <span>📥</span> Export Excel
+        </button>
+        <button class="refresh-btn" onclick="loadAll()" title="Refresh data">🔄</button>
+      </div>
+    </header>
+
+    <!-- ── Dashboard Section ──────────────────────────────────────────── -->
+    <section class="section active" id="section-dashboard">
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card" id="stat-total">
+          <div class="stat-icon">📋</div>
+          <div class="stat-info">
+            <span class="stat-value" id="statTotal">—</span>
+            <span class="stat-label">Total Bookings</span>
+          </div>
+          <div class="stat-trend" id="trendTotal"></div>
+        </div>
+        <div class="stat-card accent-green" id="stat-today">
+          <div class="stat-icon">📅</div>
+          <div class="stat-info">
+            <span class="stat-value" id="statToday">—</span>
+            <span class="stat-label">Today's Bookings</span>
+          </div>
+        </div>
+        <div class="stat-card accent-orange" id="stat-cancelled">
+          <div class="stat-icon">❌</div>
+          <div class="stat-info">
+            <span class="stat-value" id="statCancelled">—</span>
+            <span class="stat-label">Cancelled</span>
+          </div>
+        </div>
+        <div class="stat-card accent-purple" id="stat-service">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-info">
+            <span class="stat-value" id="statTopService">—</span>
+            <span class="stat-label">Top Service</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Appointments -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Recent Appointments</h3>
+          <button class="btn-text" onclick="showSection('appointments')">View all →</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="appt-table" id="recentTable">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Service</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="recentTableBody">
+              <tr><td colspan="6" class="loading-row">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Services Chart -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Services Breakdown</h3>
+        </div>
+        <div class="services-chart" id="servicesChart"></div>
+      </div>
+    </section>
+
+    <!-- ── Appointments Section ────────────────────────────────────────── -->
+    <section class="section" id="section-appointments">
+      <div class="filters-bar">
+        <div class="filter-group">
+          <label>Date</label>
+          <input type="date" id="filterDate" onchange="applyFilters()" />
+        </div>
+        <div class="filter-group">
+          <label>Status</label>
+          <select id="filterStatus" onchange="applyFilters()">
+            <option value="">All</option>
+            <option value="booked">Booked</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <button class="btn-secondary" onclick="clearFilters()">Clear Filters</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>All Appointments</h3>
+          <span class="badge" id="appointmentCount">0</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="appt-table" id="allTable">
+            <thead>
+              <tr>
+                <th onclick="sortTable('id')">#</th>
+                <th onclick="sortTable('name')">Customer ↕</th>
+                <th>Phone</th>
+                <th onclick="sortTable('service')">Service ↕</th>
+                <th onclick="sortTable('date')">Date ↕</th>
+                <th>Time</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="allTableBody">
+              <tr><td colspan="8" class="loading-row">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Calendar Section ────────────────────────────────────────────── -->
+    <section class="section" id="section-calendar">
+      <div class="card">
+        <div class="calendar-header">
+          <button class="cal-nav" onclick="changeMonth(-1)">‹</button>
+          <h3 id="calMonthLabel">April 2026</h3>
+          <button class="cal-nav" onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </div>
+      <div class="card" id="dayDetailCard" style="display:none;">
+        <div class="card-header">
+          <h3 id="dayDetailTitle">Appointments for…</h3>
+        </div>
+        <div id="dayDetailContent"></div>
+      </div>
+    </section>
+
+    <!-- ── Add Booking Section ─────────────────────────────────────────── -->
+    <section class="section" id="section-add">
+      <div class="card form-card">
+        <div class="card-header">
+          <h3>New Appointment</h3>
+        </div>
+        <form id="bookingForm" onsubmit="submitBooking(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="fName">Customer Name *</label>
+              <input type="text" id="fName" placeholder="e.g. Sarah Johnson" required />
+            </div>
+            <div class="form-group">
+              <label for="fPhone">Phone Number *</label>
+              <input type="tel" id="fPhone" placeholder="+1 234 567 8900" required />
+            </div>
+            <div class="form-group">
+              <label for="fService">Service *</label>
+              <select id="fService" required>
+                <option value="">— Select Service —</option>
+                <option>Haircut</option>
+                <option>Hair Coloring</option>
+                <option>Highlights</option>
+                <option>Blowout</option>
+                <option>Facial</option>
+                <option>Manicure</option>
+                <option>Pedicure</option>
+                <option>Eyebrow Threading</option>
+                <option>Waxing</option>
+                <option>Keratin Treatment</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="fDate">Date *</label>
+              <input type="date" id="fDate" required />
+            </div>
+            <div class="form-group">
+              <label for="fTime">Time *</label>
+              <input type="time" id="fTime" min="09:00" max="19:00" required />
+            </div>
+            <div class="form-group full-width">
+              <label for="fNotes">Notes</label>
+              <textarea id="fNotes" placeholder="Any special requests or notes…" rows="3"></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="reset" class="btn-secondary">Clear</button>
+            <button type="submit" class="btn-primary" id="submitBtn">Book Appointment</button>
+          </div>
+          <div id="formMessage" class="form-message"></div>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── Modal ──────────────────────────────────────────────────────────── -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 id="modalTitle">Appointment Details</h3>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- ── Toast ──────────────────────────────────────────────────────────── -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
