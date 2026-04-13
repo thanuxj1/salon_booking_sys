@@ -81,6 +81,10 @@ function showSection(name) {
 
   document.getElementById(`section-${name}`)?.classList.add('active');
   document.getElementById(`nav-${name}`)?.classList.add('active');
+  
+  // Sync bottom nav
+  document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById(`bnav-${name}`)?.classList.add('active');
 
   const titles = {
     dashboard:    ['Dashboard',       "Welcome back! Here's today's overview."],

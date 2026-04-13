@@ -279,6 +279,26 @@
   <!-- ── Toast ──────────────────────────────────────────────────────────── -->
   <div class="toast" id="toast"></div>
 
+  <!-- ── Bottom Navigation (Mobile Only) ────────────────────────────── -->
+  <nav class="bottom-nav">
+    <a href="#" class="bottom-nav-item active" id="bnav-dashboard" onclick="showSection('dashboard')">
+      <span class="nav-icon">📊</span>
+      <span>Home</span>
+    </a>
+    <a href="#" class="bottom-nav-item" id="bnav-appointments" onclick="showSection('appointments')">
+      <span class="nav-icon">📅</span>
+      <span>Bookings</span>
+    </a>
+    <a href="#" class="bottom-nav-item" id="bnav-calendar" onclick="showSection('calendar')">
+      <span class="nav-icon">🗓️</span>
+      <span>Calendar</span>
+    </a>
+    <a href="#" class="bottom-nav-item" id="bnav-add" onclick="showSection('add')">
+      <span class="nav-icon">➕</span>
+      <span>New</span>
+    </a>
+  </nav>
+
   <script src="app.js"></script>
 </body>
 </html>

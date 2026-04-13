@@ -866,20 +866,64 @@ input, select, textarea {
 .toast.error   { border-left: 3px solid #ef4444; }
 .toast.info    { border-left: 3px solid var(--accent); }
 
-/* ── Responsive ─────────────────────────────────────────────────────────── */
-.sidebar-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(8px);
-  z-index: 110;
-  opacity: 0;
-  display: none; /* Physically remove from click flow when closed */
-  transition: opacity 0.4s ease;
+/* ── Responsive Redesign (Premium Mobile-First) ─────────────────────────── */
+
+/* 1. Reset Global width protections */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  -webkit-tap-highlight-color: transparent;
 }
-.sidebar-overlay.active { 
-  display: block;
-  opacity: 1; 
+
+/* 2. Bottom Nav Styling */
+.bottom-nav {
+  display: none; /* Desktop hidden */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  background: rgba(19, 19, 31, 0.85);
+  backdrop-filter: blur(25px);
+  border-top: 1px solid var(--border);
+  z-index: 1000;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 10px 10px; /* Space for home indicator */
+  box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  gap: 4px;
+  flex: 1;
+  transition: all 0.3s ease;
+}
+
+.bottom-nav-item span:first-child { 
+  font-size: 1.4rem; 
+  transition: transform 0.3s ease;
+}
+
+.bottom-nav-item span:last-child {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bottom-nav-item.active {
+  color: var(--accent);
+}
+
+.bottom-nav-item.active span:first-child {
+  transform: translateY(-4px);
+  filter: drop-shadow(0 0 8px var(--accent-glow));
 }
 
 @media (max-width: 1100px) {
@@ -888,99 +932,164 @@ input, select, textarea {
 
 @media (max-width: 768px) {
   :root { 
-    --sidebar-w: 280px; 
-    --topbar-h: 60px;
+    --topbar-h: 70px;
+    --radius: 20px;
   }
   
-  html, body { font-size: 14px; }
+  body { 
+    padding-bottom: 72px; /* Space for bottom nav */
+  }
 
-  .sidebar { 
-    transform: translateX(-100%); 
-    visibility: hidden;
-    width: var(--sidebar-w);
+  /* Completely hide sidebar & drawer elements */
+  .sidebar, .sidebar-overlay, .hamburger { 
+    display: none !important; 
   }
-  
-  .sidebar.mobile-open { 
-    transform: translateX(0); 
-    visibility: visible;
-    box-shadow: 20px 0 60px rgba(0,0,0,0.8);
-  }
-  
+
   .main-content { 
     margin-left: 0 !important; 
     width: 100%;
-    max-width: 100vw;
   }
-  
-  .topbar { 
-    padding: 0 12px; 
-    gap: 8px;
+
+  .topbar {
+    background: transparent;
+    border-bottom: none;
+    padding: 20px 20px 0;
+    justify-content: space-between;
+    height: auto;
+    position: relative;
+    backdrop-filter: none;
   }
-  
-  .page-title h2 { font-size: 1rem; }
-  .page-title span { display: none; }
-  
-  .search-bar { 
-    flex: 1;
-    padding: 6px 10px; 
+
+  .page-title h2 { 
+    font-size: 1.4rem; 
+    font-weight: 800;
   }
-  .search-bar input { width: 100%; min-width: 0; font-size: 0.8rem; }
+  .page-subtitle { display: none; }
   
+  .topbar-right { gap: 10px; }
   .export-btn { 
-    padding: 6px 10px; 
-    font-size: 0.75rem; 
-    min-width: 40px;
-    justify-content: center;
+    border-radius: 12px;
+    padding: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
   }
   .export-btn span:last-child { display: none; }
 
   .section { 
-    padding: 16px 12px; 
-    gap: 16px;
-    width: 100%;
+    padding: 20px; 
+    gap: 24px;
   }
-  
-  .stats-grid { 
-    grid-template-columns: 1fr 1fr;
-    gap: 10px; 
-  }
-  .stat-card { padding: 12px; gap: 8px; }
-  .stat-icon { width: 40px; height: 40px; font-size: 1.2rem; }
-  .stat-value { font-size: 1.25rem; }
-  
-  .card-header { padding: 12px 16px; }
-  
-  .table-wrapper {
-    margin: 0;
-    width: 100%;
+
+  /* ── Stats Carousel Mock ────────────────────────────────────────── */
+  .stats-grid {
+    display: flex;
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border-radius: var(--radius-xs);
+    scroll-snap-type: x mandatory;
+    gap: 12px;
+    padding-bottom: 8px;
+    margin: 0 -20px;
+    padding: 0 20px 10px;
+  }
+  .stats-grid::-webkit-scrollbar { display: none; }
+  
+  .stat-card {
+    min-width: 160px;
+    scroll-snap-align: start;
+    padding: 18px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .stat-icon { margin-bottom: 8px; }
+  .stat-value { font-size: 1.6rem; }
+
+  /* ── Table to Card Engine ──────────────────────────────────────── */
+  .table-wrapper { overflow: visible; }
+  
+  .appt-table thead { display: none; } /* Hide headers */
+  
+  .appt-table, .appt-table tbody, .appt-table tr, .appt-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .appt-table tr {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    padding: 16px;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .appt-table td {
+    padding: 8px 0;
+    border-bottom: none !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95rem;
+  }
+
+  /* First cell (Customer) special styling */
+  .appt-table td:nth-child(1),
+  .appt-table td:nth-child(2) {
+    padding-top: 0;
+    margin-bottom: 4px;
   }
   
-  .appt-table td, .appt-table th { padding: 10px 12px; }
+  /* Hide the #ID on mobile to save space */
+  .appt-table td:first-child:not(.customer-cell) { display: none; }
+
+  /* Add labels before data */
+  .appt-table td::before {
+    content: attr(data-label);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
   
-  .form-grid { grid-template-columns: 1fr; gap: 12px; }
+  .appt-table .customer-cell { 
+    justify-content: flex-start; 
+    width: 100%;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-soft) !important;
+  }
+  .appt-table .customer-cell::before { display: none; }
+  
+  .action-btns { 
+    width: 100%; 
+    justify-content: flex-end; 
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  .bottom-nav { display: flex; }
+
+  /* New Booking Form */
+  .form-card { border: none; background: transparent; }
+  .form-grid { grid-template-columns: 1fr; }
+  .btn-primary { width: 100%; padding: 16px; }
+
+  /* Calendar */
+  .cal-day { min-height: 55px; }
+
+  /* Modal bottom sheet */
+  .modal {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    border-radius: 24px 24px 0 0;
+    animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }
 
-@media (max-width: 480px) {
-  .stats-grid { grid-template-columns: 1fr; }
-  
-  .topbar-left { gap: 4px; }
-  .logo-text h1 { font-size: 1rem; }
-  
-  .hamburger { padding: 8px; margin-left: -8px; }
-
-  .customer-name { max-width: 100px; }
-  
-  .appt-table th:nth-child(n+4), 
-  .appt-table td:nth-child(n+4) { display: none; } /* Show only Customer & Service on tiny screens */
-  
-  .search-bar { display: none; }
-  
-  .modal { 
-    width: 100vw !important; 
-    left: 0 !important;
-    right: 0 !important;
-  }
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
