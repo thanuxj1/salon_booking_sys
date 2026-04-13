@@ -27,7 +27,7 @@ const schema = {
 
 // Initialize the model with the schema
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash",
+  model: "gemini-flash-latest",
   generationConfig: {
     responseMimeType: "application/json",
     responseSchema: schema,
