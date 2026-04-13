@@ -106,9 +106,9 @@ function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
   const main    = document.querySelector('.main-content');
   const overlay = document.getElementById('sidebarOverlay');
-  
+
   if (window.innerWidth <= 768) {
-    sidebar.classList.toggle('mobile-open');
+    sidebar.classList.toggle('active');
     overlay.classList.toggle('active');
   } else {
     sidebar.classList.toggle('collapsed');

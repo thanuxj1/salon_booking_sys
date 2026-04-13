@@ -215,6 +215,7 @@ input, select, textarea {
   padding: 4px;
   border-radius: var(--radius-xs);
   transition: color var(--transition);
+  display: none; /* Hidden by default, shown on mobile */
 }
 .hamburger:hover { color: var(--text-primary); }
 
