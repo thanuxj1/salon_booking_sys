@@ -96,9 +96,9 @@ function showSection(name) {
   document.getElementById('pageTitle').textContent    = title;
   document.getElementById('pageSubtitle').textContent = sub;
 
-  // Close mobile sidebar
+  // Close mobile sidebar if open
   const sidebar = document.getElementById('sidebar');
-  if (sidebar.classList.contains('mobile-open')) {
+  if (sidebar.classList.contains('active')) {
     toggleSidebar();
   }
 
@@ -225,10 +225,10 @@ function renderTableRows(tbodyId, data, cols) {
       // Recent table (no phone column)
       return `<tr>
         <td>${customerCell}</td>
-        <td>${esc(a.service)}</td>
-        <td>${dateStr}</td>
-        <td>${timeStr}</td>
-        <td>${statusBadge}</td>
+        <td data-label="Service">${esc(a.service)}</td>
+        <td data-label="Date">${dateStr}</td>
+        <td data-label="Time">${timeStr}</td>
+        <td data-label="Status">${statusBadge}</td>
         <td><div class="action-btns">
           <button class="action-btn" onclick="viewAppointment(${a.id})" title="View">👁</button>
           ${a.status === 'booked' ? `<button class="action-btn danger" onclick="deleteAppointment(${a.id})" title="Cancel">✕</button>` : ''}
@@ -239,11 +239,11 @@ function renderTableRows(tbodyId, data, cols) {
       return `<tr>
         <td style="color:var(--text-muted);font-size:0.8rem">#${a.id}</td>
         <td>${customerCell}</td>
-        <td style="font-size:0.82rem">${esc(a.phone || '')}</td>
-        <td>${esc(a.service)}</td>
-        <td>${dateStr}</td>
-        <td>${timeStr}</td>
-        <td>${statusBadge}</td>
+        <td data-label="Phone" style="font-size:0.82rem">${esc(a.phone || '')}</td>
+        <td data-label="Service">${esc(a.service)}</td>
+        <td data-label="Date">${dateStr}</td>
+        <td data-label="Time">${timeStr}</td>
+        <td data-label="Status">${statusBadge}</td>
         <td><div class="action-btns">
           <button class="action-btn" onclick="viewAppointment(${a.id})" title="View">👁</button>
           ${a.status === 'booked' ? `<button class="action-btn" onclick='markCompleted(${a.id})' title="Complete">✅</button>` : ''}
@@ -272,7 +272,7 @@ function renderServicesChart() {
   const container = document.getElementById('servicesChart');
 
   if (!sorted.length) {
-    container.innerHTML = '<p style="color:var(--text-muted);font-style:italic;padding:12px 0">No service data yet.</p>';
+    container.innerHTML = '<div style="color:var(--text-muted);font-style:italic;padding:32px 0;text-align:center;font-size:0.9rem;display:flex;flex-direction:column;gap:8px;align-items:center"><span style="font-size:1.8rem;opacity:0.5">📊</span>No service data yet.</div>';
     return;
   }
 
@@ -402,6 +402,15 @@ function clearFilters() {
 
 function handleSearch(query) {
   const q = query.toLowerCase().trim();
+
+  // Keep all inputs in sync
+  const globalEl = document.getElementById('globalSearch');
+  const mobileEl = document.getElementById('mobileSearchInput');
+  const dashEl   = document.getElementById('mobileSearchDashboard');
+  if (globalEl && globalEl.value !== query) globalEl.value = query;
+  if (mobileEl && mobileEl.value !== query) mobileEl.value = query;
+  if (dashEl   && dashEl.value !== query)   dashEl.value   = query;
+
   filteredAppointments = allAppointments.filter(a =>
     a.name?.toLowerCase().includes(q) ||
     a.phone?.toLowerCase().includes(q) ||

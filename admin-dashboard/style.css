@@ -243,6 +243,11 @@ input, select, textarea {
 .page-title span {
   font-size: 0.8rem;
   color: var(--text-muted);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
 }
 
 .topbar-right { display: flex; align-items: center; gap: 12px; }
@@ -265,7 +270,8 @@ input, select, textarea {
   border: none;
   outline: none;
   color: var(--text-primary);
-  width: 200px;
+  width: 180px;
+  min-width: 0;
 }
 .search-bar input::placeholder { color: var(--text-muted); }
 
@@ -550,13 +556,14 @@ input, select, textarea {
 }
 
 .service-bar-row { display: flex; align-items: center; gap: 12px; }
-.service-bar-label { width: 160px; font-size: 0.85rem; color: var(--text-secondary); flex-shrink: 0; }
+.service-bar-label { width: 130px; min-width: 90px; font-size: 0.85rem; color: var(--text-secondary); flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .service-bar-track {
   flex: 1;
   height: 8px;
   background: var(--bg-surface);
   border-radius: 50px;
   overflow: hidden;
+  min-width: 0;
 }
 .service-bar-fill {
   height: 100%;
@@ -564,7 +571,12 @@ input, select, textarea {
   border-radius: 50px;
   transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
 }
-.service-bar-count { font-size: 0.8rem; color: var(--text-muted); width: 24px; text-align: right; }
+.service-bar-count { font-size: 0.8rem; color: var(--text-muted); width: 24px; text-align: right; flex-shrink: 0; }
+
+/* ── Mobile Search Bar ───────────────────────────────────────────────── */
+.mobile-search {
+  display: none; /* hidden on desktop */
+}
 
 /* ── Filters Bar ─────────────────────────────────────────────────────── */
 .filters-bar {
@@ -758,7 +770,7 @@ input, select, textarea {
   inset: 0;
   background: rgba(0,0,0,0.6);
   backdrop-filter: blur(4px);
-  z-index: 200;
+  z-index: 2000;
   display: none;
   align-items: center;
   justify-content: center;
@@ -855,7 +867,7 @@ input, select, textarea {
   transform: translateY(10px);
   pointer-events: none;
   transition: all 0.3s ease;
-  z-index: 999;
+  z-index: 1500;
   max-width: 340px;
 }
 .toast.show {
@@ -866,9 +878,11 @@ input, select, textarea {
 .toast.error   { border-left: 3px solid #ef4444; }
 .toast.info    { border-left: 3px solid var(--accent); }
 
-/* ── Responsive Redesign (Premium Mobile-First) ─────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════
+   RESPONSIVE & MOBILE STYLES
+   ══════════════════════════════════════════════════════════════════════ */
 
-/* 1. Reset Global width protections */
+/* ── Global Mobile Protections ────────────────────────────────────────── */
 html, body {
   overflow-x: hidden;
   width: 100%;
@@ -876,22 +890,30 @@ html, body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* 2. Bottom Nav Styling */
+/* Mobile search — hidden by default, shown inside media query */
+.mobile-search { display: none; }
+
+/* ── Bottom Navigation (Mobile) ──────────────────────────────────────── */
 .bottom-nav {
-  display: none; /* Desktop hidden */
+  display: none;
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 72px;
-  background: rgba(19, 19, 31, 0.85);
-  backdrop-filter: blur(25px);
+  height: 70px;
+  background: rgba(13, 13, 20, 0.92);
+  backdrop-filter: blur(30px) saturate(160%);
+  -webkit-backdrop-filter: blur(30px) saturate(160%);
   border-top: 1px solid var(--border);
   z-index: 1000;
   justify-content: space-around;
   align-items: center;
-  padding: 0 10px 10px; /* Space for home indicator */
-  box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+  padding: 0 8px env(safe-area-inset-bottom, 8px);
+  box-shadow: 0 -6px 30px rgba(0,0,0,0.55);
+}
+
+[data-theme="light"] .bottom-nav {
+  background: rgba(240, 238, 255, 0.94);
 }
 
 .bottom-nav-item {
@@ -899,22 +921,27 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted);
-  gap: 4px;
+  gap: 3px;
   flex: 1;
-  transition: all 0.3s ease;
+  padding: 6px 0;
+  color: var(--text-muted);
+  border-radius: 12px;
+  transition: color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
 }
 
-.bottom-nav-item span:first-child { 
-  font-size: 1.4rem; 
-  transition: transform 0.3s ease;
+.bottom-nav-item span:first-child {
+  font-size: 1.35rem;
+  line-height: 1;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .bottom-nav-item span:last-child {
-  font-size: 0.65rem;
-  font-weight: 600;
+  font-size: 0.62rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 
 .bottom-nav-item.active {
@@ -922,174 +949,472 @@ html, body {
 }
 
 .bottom-nav-item.active span:first-child {
-  transform: translateY(-4px);
-  filter: drop-shadow(0 0 8px var(--accent-glow));
+  transform: translateY(-3px) scale(1.15);
+  filter: drop-shadow(0 0 6px rgba(168,85,247,0.6));
 }
 
+.bottom-nav-item.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 32px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-pink));
+  border-radius: 0 0 6px 6px;
+  animation: navIndicator 0.3s ease;
+}
+
+@keyframes navIndicator {
+  from { width: 0; opacity: 0; }
+  to { width: 32px; opacity: 1; }
+}
+
+/* ── Breakpoint: Large Tablet (≤1100px) ──────────────────────────────── */
 @media (max-width: 1100px) {
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ── Breakpoint: Tablet / Small laptop (≤900px) ──────────────────────── */
+@media (max-width: 900px) {
+  :root { --sidebar-w: 220px; }
+
+  .search-bar input { width: 130px; }
+
+  .topbar { padding: 0 18px; }
+}
+
+/* ── Breakpoint: Mobile (≤768px) ─────────────────────────────────────── */
 @media (max-width: 768px) {
-  :root { 
-    --topbar-h: 70px;
-    --radius: 20px;
-  }
-  
-  body { 
-    padding-bottom: 72px; /* Space for bottom nav */
+  :root {
+    --topbar-h: 64px;
+    --radius:   16px;
   }
 
-  /* Completely hide sidebar & drawer elements */
-  .sidebar, .sidebar-overlay, .hamburger { 
-    display: none !important; 
+  body {
+    padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
   }
 
-  .main-content { 
-    margin-left: 0 !important; 
+  /* Hide sidebar, overlay, hamburger completely */
+  .sidebar,
+  .sidebar-overlay,
+  .hamburger {
+    display: none !important;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
     width: 100%;
   }
 
+  /* ── Topbar ─────────────────────────────────────────────────────── */
   .topbar {
-    background: transparent;
-    border-bottom: none;
-    padding: 20px 20px 0;
-    justify-content: space-between;
-    height: auto;
-    position: relative;
-    backdrop-filter: none;
+    padding: 0 14px;
+    height: var(--topbar-h);
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    gap: 10px;
   }
 
-  .page-title h2 { 
-    font-size: 1.4rem; 
+  .topbar-left {
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .page-title {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .page-title h2 {
+    font-size: 1.1rem;
     font-weight: 800;
-  }
-  .page-subtitle { display: none; }
-  
-  .topbar-right { gap: 10px; }
-  .export-btn { 
-    border-radius: 12px;
-    padding: 10px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-  }
-  .export-btn span:last-child { display: none; }
-
-  .section { 
-    padding: 20px; 
-    gap: 24px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  /* ── Stats Carousel Mock ────────────────────────────────────────── */
+  /* Completely hide subtitle & desktop search on mobile */
+  .page-title span,
+  #pageSubtitle {
+    display: none !important;
+  }
+
+  /* Compact right side; hide desktop search pill */
+  .topbar-right {
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .search-bar {
+    display: none !important;
+  }
+
+  .export-btn {
+    padding: 9px 12px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    gap: 5px;
+  }
+
+  .export-btn .export-label { display: none; }
+
+  .refresh-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* ── Sections ────────────────────────────────────────────────────── */
+  .section {
+    padding: 16px 16px;
+    gap: 16px;
+  }
+
+  /* ── Stats — horizontal scroll carousel ──────────────────────────── */
   .stats-grid {
     display: flex;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     scroll-snap-type: x mandatory;
+    scroll-padding: 16px;
     gap: 12px;
-    padding-bottom: 8px;
-    margin: 0 -20px;
-    padding: 0 20px 10px;
+    margin: 0 -16px;
+    padding: 4px 32px 12px 16px; /* 32px right padding for 'peek' effect */
   }
   .stats-grid::-webkit-scrollbar { display: none; }
-  
+  .stats-grid { scrollbar-width: none; }
+
   .stat-card {
-    min-width: 160px;
+    min-width: 155px;
+    max-width: 165px;
+    flex-shrink: 0;
     scroll-snap-align: start;
-    padding: 18px;
+    padding: 16px 14px;
     flex-direction: column;
     align-items: flex-start;
+    gap: 8px;
   }
-  .stat-icon { margin-bottom: 8px; }
-  .stat-value { font-size: 1.6rem; }
 
-  /* ── Table to Card Engine ──────────────────────────────────────── */
+  /* Prevent stat labels from wrapping or being cut off */
+  .stat-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .stat-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 1.5rem;
+    margin-bottom: 0;
+  }
+
+  .stat-value { font-size: 1.5rem; }
+  .stat-label { font-size: 0.7rem; }
+
+  /* ── Cards ───────────────────────────────────────────────────────── */
+  .card-header {
+    padding: 14px 16px;
+  }
+
+  .card-header h3 { font-size: 0.95rem; }
+
+  /* ── Filters Bar ─────────────────────────────────────────────────── */
+  .filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .filter-group { width: 100%; }
+
+  .filter-group input,
+  .filter-group select {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .btn-secondary {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ── Services Chart ──────────────────────────────────────────────── */
+  .services-chart { padding: 14px 16px; }
+  .service-bar-label {
+    width: 100px;
+    min-width: 70px;
+    font-size: 0.78rem;
+  }
+
+  /* ── Table → Card Engine ─────────────────────────────────────────── */
   .table-wrapper { overflow: visible; }
-  
-  .appt-table thead { display: none; } /* Hide headers */
-  
-  .appt-table, .appt-table tbody, .appt-table tr, .appt-table td {
+
+  /* ── Convert table → stacked cards ──────────────────────────────── */
+  .appt-table thead { display: none; }
+
+  .appt-table,
+  .appt-table tbody {
     display: block;
     width: 100%;
   }
 
+  /* Each row = a card */
   .appt-table tr {
+    display: block;
+    width: 100%;
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    margin-bottom: 16px;
-    padding: 16px;
-    position: relative;
+    margin-bottom: 12px;
+    padding: 14px 16px;
     box-shadow: var(--shadow-sm);
+    transition: background var(--transition);
   }
 
+  .appt-table tr:hover { background: var(--bg-card-hover); }
+
+  /* Default cell = label-value row */
   .appt-table td {
-    padding: 8px 0;
-    border-bottom: none !important;
-    display: flex;
+    display: flex !important;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.95rem;
-  }
-
-  /* First cell (Customer) special styling */
-  .appt-table td:nth-child(1),
-  .appt-table td:nth-child(2) {
-    padding-top: 0;
-    margin-bottom: 4px;
-  }
-  
-  /* Hide the #ID on mobile to save space */
-  .appt-table td:first-child:not(.customer-cell) { display: none; }
-
-  /* Add labels before data */
-  .appt-table td::before {
-    content: attr(data-label);
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    font-weight: 600;
-  }
-  
-  .appt-table .customer-cell { 
-    justify-content: flex-start; 
+    padding: 5px 0;
+    border-bottom: none !important;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
     width: 100%;
-    margin-bottom: 12px;
-    padding-bottom: 12px;
+    box-sizing: border-box;
+  }
+
+  /* Label injected via data-label */
+  .appt-table td[data-label]::before {
+    content: attr(data-label);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    flex-shrink: 0;
+    margin-right: 8px;
+  }
+
+  /* ── Customer cell: show as FULL-WIDTH header of card ────────────── */
+  /* The td wrapping the customer cell: display as a block, not flex */
+  .appt-table td:has(.customer-cell) {
+    display: block !important;
+    padding: 0 0 12px 0 !important;
+    margin-bottom: 8px;
     border-bottom: 1px solid var(--border-soft) !important;
   }
-  .appt-table .customer-cell::before { display: none; }
-  
-  .action-btns { 
-    width: 100%; 
-    justify-content: flex-end; 
-    margin-top: 8px;
-    padding-top: 12px;
-    border-top: 1px solid var(--border-soft);
+
+  /* No label for customer cell row */
+  .appt-table td:has(.customer-cell)::before {
+    display: none !important;
   }
 
+  /* The customer cell itself fills the block parent */
+  .appt-table .customer-cell {
+    display: flex !important;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    color: var(--text-primary);
+  }
+
+  .appt-table .customer-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .appt-table .customer-phone {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* Hide extra #ID column in the all-appointments table */
+  #allTable td:first-child {
+    display: none !important;
+  }
+
+  /* ── Action buttons row at bottom of card ────────────────────────── */
+  .action-btns {
+    width: 100% !important;
+    justify-content: flex-end !important;
+    padding-top: 10px !important;
+    margin-top: 6px !important;
+    border-top: 1px solid var(--border-soft) !important;
+  }
+
+  /* Td wrapping action buttons: full-width block */
+  .appt-table td:last-child {
+    display: block !important;
+    padding: 0 !important;
+  }
+
+  .appt-table td:last-child::before {
+    display: none !important;
+  }
+
+  .action-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 1.1rem;
+  }
+
+  /* ── Bottom Nav ──────────────────────────────────────────────────── */
   .bottom-nav { display: flex; }
 
-  /* New Booking Form */
-  .form-card { border: none; background: transparent; }
-  .form-grid { grid-template-columns: 1fr; }
-  .btn-primary { width: 100%; padding: 16px; }
+  /* ── Mobile search bar (shown inside sections on mobile) ─────────── */
+  .mobile-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 11px 18px;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border var(--transition);
+  }
 
-  /* Calendar */
-  .cal-day { min-height: 55px; }
+  .mobile-search:focus-within { border-color: var(--accent); }
+  .mobile-search .search-icon { font-size: 1rem; flex-shrink: 0; }
 
-  /* Modal bottom sheet */
+  .mobile-search input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-size: 1rem; /* prevents iOS auto-zoom */
+    font-family: inherit;
+    min-width: 0;
+  }
+
+  .mobile-search input::placeholder { color: var(--text-muted); }
+
+  /* Toast: sit above bottom nav */
+  .toast {
+    bottom: calc(70px + 12px + env(safe-area-inset-bottom, 0px));
+    right: 16px;
+    left: 16px;
+    max-width: none;
+    text-align: center;
+  }
+
+  /* ── New Booking Form ────────────────────────────────────────────── */
+  .form-card {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  .form-card form { padding: 8px 4px; }
+
+  .form-grid { grid-template-columns: 1fr; gap: 14px; }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 1rem; /* Prevent iOS zoom */
+    padding: 14px 16px;
+  }
+
+  .form-actions { flex-direction: column-reverse; gap: 10px; }
+
+  .btn-primary {
+    width: 100%;
+    padding: 16px;
+    font-size: 1rem;
+  }
+
+  .btn-secondary { width: 100%; text-align: center; }
+
+  /* ── Calendar ─────────────────────────────────────────────────────── */
+  .calendar-header { padding: 14px 16px; }
+  .calendar-header h3 { font-size: 1rem; }
+
+  .calendar-grid { padding: 0 2px 12px; }
+
+  .cal-day {
+    min-height: 60px;
+    padding: 8px 4px;
+  }
+
+  .cal-day-num { font-size: 0.75rem; }
+  .cal-count { font-size: 0.6rem; }
+  .cal-day-header { font-size: 0.65rem; padding: 8px 2px; }
+
+  /* ── Day Detail Card ─────────────────────────────────────────────── */
+  #dayDetailContent div[style] {
+    padding: 12px 14px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  /* ── Modal → Bottom Sheet ────────────────────────────────────────── */
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
   .modal {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    top: auto;
+    width: 100%;
+    max-width: 100%;
     border-radius: 24px 24px 0 0;
-    animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: env(safe-area-inset-bottom, 0);
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: mobileSheetUp 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  @keyframes mobileSheetUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+
+  .modal-body { padding: 16px; }
+  .modal-header { padding: 16px 20px; }
+
+  .modal-actions {
+    flex-direction: column;
+    padding: 12px 16px;
+  }
+
+  .modal-actions .btn-secondary,
+  .modal-actions .btn-danger {
+    width: 100%;
+    text-align: center;
+    padding: 14px;
   }
 }
 
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+/* ── Extra Small (≤390px — iPhone SE, Galaxy S) ──────────────────── */
+@media (max-width: 390px) {
+  .section { padding: 12px; }
+
+  .stat-card { min-width: 135px; padding: 14px; }
+  .stat-value { font-size: 1.35rem; }
+
+  .topbar { padding: 0 12px; }
+
+  .cal-day { min-height: 42px; }
+  .cal-day-num { font-size: 0.7rem; }
+}
+
+/* ── Landscape Mobile ────────────────────────────────────────────────── */
+@media (max-width: 896px) and (orientation: landscape) {
+  body { padding-bottom: 60px; }
+  .bottom-nav { height: 60px; }
+  .stats-grid { margin: 0 -12px; padding: 0 12px 8px; }
+  .section { padding: 12px 16px; }
 }

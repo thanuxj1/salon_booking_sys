@@ -70,7 +70,7 @@
           <input type="text" id="globalSearch" placeholder="Search customers…" oninput="handleSearch(this.value)" />
         </div>
         <button class="export-btn" id="exportBtn" onclick="exportExcel()">
-          <span>📥</span> Export Excel
+          <span>📥</span> <span class="export-label">Export</span>
         </button>
         <button class="refresh-btn" onclick="loadAll()" title="Refresh data">🔄</button>
       </div>
@@ -78,6 +78,12 @@
 
     <!-- ── Dashboard Section ──────────────────────────────────────────── -->
     <section class="section active" id="section-dashboard">
+      <!-- Mobile Search -->
+      <div class="mobile-search">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="mobileSearchDashboard" placeholder="Search customers, services…" oninput="handleSearch(this.value)" />
+      </div>
+
       <!-- Stats -->
       <div class="stats-grid">
         <div class="stat-card" id="stat-total">
@@ -147,6 +153,12 @@
 
     <!-- ── Appointments Section ────────────────────────────────────────── -->
     <section class="section" id="section-appointments">
+      <!-- Mobile Search -->
+      <div class="mobile-search" id="mobileSearch">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="mobileSearchInput" placeholder="Search customers, services…" oninput="handleSearch(this.value)" />
+      </div>
+
       <div class="filters-bar">
         <div class="filter-group">
           <label>Date</label>
