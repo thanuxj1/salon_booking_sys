@@ -3,7 +3,7 @@
    Handles: API calls, table rendering, calendar, forms, modals, toasts
    ══════════════════════════════════════════════════════════════════════ */
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = 'https://salon-booking-sys.onrender.com/api';
 
 // ── State ─────────────────────────────────────────────────────────────────
 let allAppointments = [];
