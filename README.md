@@ -8,24 +8,23 @@ An AI-powered WhatsApp chatbot that acts as a salon receptionist — books appoi
 
 ```
 chatbot/
-├── backend/              # Node.js/Express API + WhatsApp webhook
-│   ├── src/
-│   │   ├── app.js        # Express entry point
-│   │   ├── config/       # PostgreSQL pool
-│   │   ├── routes/       # WhatsApp + REST API routes
-│   │   ├── controllers/  # Route handlers
-│   │   ├── services/     # AI, booking, Excel logic
-│   │   └── middleware/   # Twilio signature validation
-│   ├── db/
-│   │   ├── schema.sql    # Database schema
-│   │   └── init.js       # Run once to create tables
-│   ├── .env.example      # Copy to .env and fill in
-│   └── package.json
-│
-└── admin-dashboard/      # Browser-based admin panel
-    ├── index.html
-    ├── style.css
-    └── app.js
+├── src/                   # Node.js/Express API + WhatsApp webhook
+│   ├── app.js             # Express entry point
+│   ├── config/            # PostgreSQL pool
+│   ├── routes/            # WhatsApp + REST API routes
+│   ├── controllers/       # Route handlers
+│   ├── services/          # AI, booking, Excel logic
+│   └── middleware/        # Twilio signature validation
+├── db/
+│   ├── schema.sql         # Database schema
+│   └── init.js            # Run once to create tables
+├── admin-dashboard/       # Browser-based admin panel
+│   ├── index.html
+│   ├── style.css
+│   └── app.js
+├── .env.example           # Copy to .env and fill in
+├── package.json
+└── README.md
 ```
 
 ---
@@ -35,7 +34,8 @@ chatbot/
 ### 1. Clone & Install
 
 ```bash
-cd e:\chatbot\backend
+git clone https://github.com/thanuxj1/salon_booking_sys.git
+cd salon_booking_sys
 npm install
 ```
 
