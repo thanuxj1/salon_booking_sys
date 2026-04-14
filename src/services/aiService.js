@@ -48,15 +48,19 @@ const BUSINESS_HOURS = {
   days:  'Monday – Saturday',
 };
 
-function buildSystemPrompt(collectedData) {
+function buildSystemPrompt(collectedData, existingAppt) {
   const today = format(new Date(), 'EEEE, MMMM do yyyy');
   const dataStr = Object.entries(collectedData)
     .filter(([, v]) => v !== null)
     .map(([k, v]) => `  • ${k}: ${v}`)
     .join('\n') || '  (nothing collected yet)';
 
+  const existingCtx = existingAppt
+    ? `\nIMPORTANT: The customer already has an active booking:\n  • Name: ${existingAppt.name}\n  • Service: ${existingAppt.service}\n  • Date: ${existingAppt.date}\n  • Time: ${String(existingAppt.time).slice(0,5)}\nIf they greet you, mention this appointment. If they want to update/reschedule, extract all 4 standard fields (keeping unchanged ones the same) so we can do an update.`
+    : '';
+
   return `You are Bella, a warm, professional receptionist at ${SALON_NAME}.
-You help customers book appointments via WhatsApp.
+You help customers book appointments via WhatsApp.${existingCtx}
 
 Today is: ${today}
 Business hours: ${BUSINESS_HOURS.days}, ${BUSINESS_HOURS.open}:00 – ${BUSINESS_HOURS.close}:00
@@ -112,7 +116,7 @@ function normaliseDate(dateStr) {
   return dateStr;
 }
 
-export async function processMessage(userMessage, session) {
+export async function processMessage(userMessage, session, existingAppt = null) {
   const { data = {}, history = [] } = session;
 
   const collectedData = {
@@ -130,7 +134,7 @@ export async function processMessage(userMessage, session) {
   });
 
   const result = await chat.sendMessage([
-    { text: buildSystemPrompt(collectedData) },
+    { text: buildSystemPrompt(collectedData, existingAppt) },
     { text: userMessage }
   ]);
 

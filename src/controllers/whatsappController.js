@@ -10,6 +10,7 @@ import {
   isSlotTaken,
   findAlternativeSlots,
   validateBookingData,
+  updateAppointment,
 } from '../services/bookingService.js';
 
 const MessagingResponse = twilio.twiml.MessagingResponse;
@@ -53,11 +54,13 @@ export async function handleWhatsAppMessage(req, res) {
       return res.send(twiml.toString());
     }
 
-    // ── Load session ──────────────────────────────────────────────────────────
+    // ── Load session & context ────────────────────────────────────────────────
     const session = await loadSession(phone);
+    const existingAppointments = await getAppointments({ phone, status: 'booked' });
+    const existingAppt = existingAppointments.length > 0 ? existingAppointments[0] : null;
 
     // ── Process with AI ───────────────────────────────────────────────────────
-    const aiResult = await processMessage(body, session);
+    const aiResult = await processMessage(body, session, existingAppt);
     const { reply, updatedSession, readyToBook, wantsCancel } = aiResult;
 
     if (wantsCancel) {
@@ -81,7 +84,7 @@ export async function handleWhatsAppMessage(req, res) {
       }
 
       // ── Double-booking prevention ──────────────────────────────────────────
-      const slotTaken = await isSlotTaken(data.date, data.time);
+      const slotTaken = await isSlotTaken(data.date, data.time, existingAppt ? existingAppt.id : null);
       if (slotTaken) {
         const alternatives = await findAlternativeSlots(data.date, data.time);
         const altStr = alternatives.length
@@ -97,16 +100,26 @@ export async function handleWhatsAppMessage(req, res) {
         return res.send(twiml.toString());
       }
 
-      // ── Create appointment ────────────────────────────────────────────────
-      const appointment = await createAppointment({
-        name:    data.name,
-        phone,
-        service: data.service,
-        date:    data.date,
-        time:    data.time,
-      });
+      // ── Create or Update appointment ──────────────────────────────────────
+      if (existingAppt) {
+        await updateAppointment(existingAppt.id, {
+          name:    data.name,
+          service: data.service,
+          date:    data.date,
+          time:    data.time,
+        });
+        console.log(`[Booking] ✏️ Updated appointment #${existingAppt.id} for ${data.name}`);
+      } else {
+        const appointment = await createAppointment({
+          name:    data.name,
+          phone,
+          service: data.service,
+          date:    data.date,
+          time:    data.time,
+        });
+        console.log(`[Booking] ✅ Created appointment #${appointment.id} for ${data.name}`);
+      }
 
-      console.log(`[Booking] ✅ Created appointment #${appointment.id} for ${data.name}`);
       await clearSession(phone);
 
       twiml.message(reply);

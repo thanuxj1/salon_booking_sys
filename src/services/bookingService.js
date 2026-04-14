@@ -4,13 +4,17 @@ import { format } from 'date-fns';
 /**
  * Check if a time slot is already booked (double-booking prevention).
  */
-export async function isSlotTaken(date, time) {
-  const result = await pool.query(
-    `SELECT id FROM appointments
-     WHERE date = $1 AND time = $2 AND status = 'booked'
-     LIMIT 1`,
-    [date, time]
-  );
+export async function isSlotTaken(date, time, excludeId = null) {
+  let query = `SELECT id FROM appointments WHERE date = $1 AND time = $2 AND status = 'booked'`;
+  const params = [date, time];
+
+  if (excludeId) {
+    query += ` AND id != $3`;
+    params.push(excludeId);
+  }
+
+  query += ` LIMIT 1`;
+  const result = await pool.query(query, params);
   return result.rows.length > 0;
 }
 
@@ -134,7 +138,7 @@ export async function getAppointmentById(id) {
  */
 export async function updateAppointment(id, updates) {
   const allowed = ['name', 'service', 'date', 'time', 'status', 'notes'];
-  const fields  = Object.keys(updates).filter(k => allowed.includes(k));
+  const fields  = Object.keys(updates).filter(k => allowed.includes(k) && updates[k] !== undefined);
   if (!fields.length) return null;
 
   const setClause = fields.map((f, i) => `${f} = $${i + 2}`).join(', ');

@@ -10,6 +10,7 @@ import {
   isSlotTaken,
   findAlternativeSlots,
   validateBookingData,
+  updateAppointment,
 } from '../services/bookingService.js';
 
 /**
@@ -118,11 +119,13 @@ export async function handleIncomingMessage(req, res) {
       return;
     }
 
-    // ── Load session ──────────────────────────────────────────────────────────
+    // ── Load session & context ────────────────────────────────────────────────
     const session = await loadSession(from);
+    const existingAppointments = await getAppointments({ phone: from, status: 'booked' });
+    const existingAppt = existingAppointments.length > 0 ? existingAppointments[0] : null;
 
     // ── Process with AI ───────────────────────────────────────────────────────
-    const aiResult = await processMessage(body, session);
+    const aiResult = await processMessage(body, session, existingAppt);
     const { reply, updatedSession, readyToBook, wantsCancel } = aiResult;
 
     if (wantsCancel) {
@@ -141,7 +144,7 @@ export async function handleIncomingMessage(req, res) {
         return;
       }
 
-      const slotTaken = await isSlotTaken(data.date, data.time);
+      const slotTaken = await isSlotTaken(data.date, data.time, existingAppt ? existingAppt.id : null);
       if (slotTaken) {
         const alternatives = await findAlternativeSlots(data.date, data.time);
         const altStr = alternatives.length
@@ -153,15 +156,25 @@ export async function handleIncomingMessage(req, res) {
         return;
       }
 
-      const appointment = await createAppointment({
-        name:    data.name,
-        phone:   from,
-        service: data.service,
-        date:    data.date,
-        time:    data.time,
-      });
+      if (existingAppt) {
+        await updateAppointment(existingAppt.id, {
+          name:    data.name,
+          service: data.service,
+          date:    data.date,
+          time:    data.time,
+        });
+        console.log(`[Booking] ✏️ Updated appointment #${existingAppt.id} for ${data.name}`);
+      } else {
+        const appointment = await createAppointment({
+          name:    data.name,
+          phone:   from,
+          service: data.service,
+          date:    data.date,
+          time:    data.time,
+        });
+        console.log(`[Booking] ✅ Created appointment #${appointment.id} for ${data.name}`);
+      }
 
-      console.log(`[Booking] ✅ Created appointment #${appointment.id} for ${data.name}`);
       await clearSession(from);
       await sendMessage(from, reply);
     } else {
