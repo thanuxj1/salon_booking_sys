@@ -61,7 +61,7 @@ export async function handleWhatsAppMessage(req, res) {
 
     // ── Process with AI ───────────────────────────────────────────────────────
     const aiResult = await processMessage(body, session, existingAppt);
-    const { reply, updatedSession, readyToBook, wantsCancel } = aiResult;
+    const { reply, updatedSession, readyToBook, wantsCancel, wantsReschedule } = aiResult;
 
     if (wantsCancel) {
       // AI detected cancel intent — route to cancel flow
@@ -101,7 +101,7 @@ export async function handleWhatsAppMessage(req, res) {
       }
 
       // ── Create or Update appointment ──────────────────────────────────────
-      if (existingAppt) {
+      if (existingAppt && wantsReschedule) {
         await updateAppointment(existingAppt.id, {
           name:    data.name,
           service: data.service,

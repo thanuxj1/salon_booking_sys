@@ -126,22 +126,54 @@ export async function processMessage(userMessage, session, existingAppt = null) 
     time:    data.time    || null,
   };
 
+  // Self-heal corrupted sessions by dropping bad segments
+  const validHistory = history.filter(h => typeof h.content === 'string' && h.content.trim());
+
   const chat = model.startChat({
-    history: history.map(h => ({
+    history: validHistory.map(h => ({
       role: h.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: h.content }],
     })),
   });
 
-  const result = await chat.sendMessage([
-    { text: buildSystemPrompt(collectedData, existingAppt) },
-    { text: userMessage }
-  ]);
+  let result;
+  try {
+    result = await chat.sendMessage([
+      { text: buildSystemPrompt(collectedData, existingAppt) },
+      { text: userMessage }
+    ]);
+  } catch (err) {
+    if (err.status === 429 || err.message?.includes('429') || err.message?.includes('exhausted') || err.message?.includes('quota')) {
+      console.error('\n🚨 [GEMINI RATE LIMIT REACHED]: You have exceeded your Google Gemini API quota or free-tier limits! 🚨\n');
+      return {
+        reply: "Sorry, but our booking assistant is currently extremely busy! Please try again in an hour, or call the salon directly. 📞",
+        updatedSession: session,
+        readyToBook: false,
+        wantsCancel: false,
+        wantsReschedule: false
+      };
+    }
+    throw err; // Re-throw other unexpected network errors
+  }
 
   const rawText = result.response.text();
   console.log(`[AI Response]: ${rawText}`);
   
-  const parsed = JSON.parse(rawText);
+  let parsed;
+  try {
+    const cleanText = rawText.replace(/```(json)?\n?/gi, '').replace(/```/g, '').trim();
+    parsed = JSON.parse(cleanText);
+  } catch (err) {
+    console.error('[AI Parse Error]: Failed to parse Gemini JSON output', err, 'Raw text:', rawText);
+    // Provide a fallback structured payload to prevent full server crash
+    parsed = {
+      message: "I'm sorry, I misunderstood that. Could you clarify the details?",
+      extracted: {},
+      ready_to_book: false,
+      wants_cancel: false,
+      wants_reschedule: false
+    };
+  }
 
   if (parsed.extracted) {
     parsed.extracted.time = normaliseTime(parsed.extracted.time);
@@ -150,14 +182,16 @@ export async function processMessage(userMessage, session, existingAppt = null) 
 
   const updatedData = mergeData(collectedData, parsed.extracted || {});
 
+  const finalMessage = parsed.message || "I am available to assist you. What do you need?";
+
   const updatedHistory = [
-    ...history,
-    { role: 'user',      content: userMessage },
-    { role: 'assistant', content: parsed.message },
+    ...validHistory,
+    { role: 'user',      content: userMessage || ' ' },
+    { role: 'assistant', content: finalMessage },
   ].slice(-20);
 
   return {
-    reply:   parsed.message,
+    reply:   finalMessage,
     updatedSession: { data: updatedData, history: updatedHistory },
     readyToBook:      parsed.ready_to_book      || false,
     wantsCancel:      parsed.wants_cancel       || false,

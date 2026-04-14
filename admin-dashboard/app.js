@@ -3,7 +3,9 @@
    Handles: API calls, table rendering, calendar, forms, modals, toasts
    ══════════════════════════════════════════════════════════════════════ */
 
-const API_BASE = 'https://salon-booking-sys.onrender.com/api';
+// Dynamically use localhost API if opened locally, otherwise use production API
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
+const API_BASE = isLocal ? 'http://localhost:3000/api' : 'https://salon-booking-sys.onrender.com/api';
 
 // ── State ─────────────────────────────────────────────────────────────────
 let allAppointments = [];
@@ -39,6 +41,8 @@ async function fetchAppointments() {
     filteredAppointments = [...allAppointments];
   } catch (err) {
     console.warn('API not reachable — using demo data.', err.message);
+    const banner = document.getElementById('demoModeBanner');
+    if (banner) banner.style.display = 'block';
     allAppointments = getDemoData();
     filteredAppointments = [...allAppointments];
     showToast('Using demo data (server not connected)', 'info');
