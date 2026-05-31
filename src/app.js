@@ -5,7 +5,6 @@ import cors from 'cors';
 
 import whatsappRoutes     from './routes/whatsapp.js';
 import appointmentRoutes  from './routes/appointments.js';
-import voiceRoutes        from './routes/voice.js';
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -28,7 +27,6 @@ app.use(express.urlencoded({ extended: false }));
 // ── Routes ───────────────────────────────────────────────────────────────────
 
 app.use('/webhook/whatsapp', whatsappRoutes);
-app.use('/webhook/voice',    voiceRoutes);
 app.use('/api/appointments',  appointmentRoutes);
 
 // Root route

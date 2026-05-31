@@ -5,7 +5,22 @@
 
 // Dynamically use localhost API if opened locally, otherwise use production API
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
-const API_BASE = isLocal ? 'http://localhost:3000/api' : 'https://salon-booking-sys.onrender.com/api';
+const DEFAULT_API = 'https://salon-booking-sys.onrender.com/api';
+const API_BASE = localStorage.getItem('API_BASE') || (isLocal ? 'http://localhost:3000/api' : DEFAULT_API);
+
+window.changeBackendUrl = function() {
+  const current = localStorage.getItem('API_BASE') || API_BASE;
+  const url = prompt("Enter your Render backend API URL (e.g., https://your-app.onrender.com/api):", current);
+  if (url !== null) {
+    const cleanUrl = url.trim().replace(/\/$/, "");
+    if (cleanUrl) {
+      localStorage.setItem('API_BASE', cleanUrl);
+    } else {
+      localStorage.removeItem('API_BASE');
+    }
+    window.location.reload();
+  }
+};
 
 // ── State ─────────────────────────────────────────────────────────────────
 let allAppointments = [];
