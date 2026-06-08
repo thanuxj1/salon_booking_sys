@@ -140,6 +140,19 @@ export async function handleIncomingMessage(req, res) {
       const validationErrors = validateBookingData(data);
       if (validationErrors.length > 0) {
         await sendMessage(from, `Hmm, I noticed a small issue: ${validationErrors[0]} Let me help you fix that! Could you clarify?`);
+        
+        // Clear the invalid field from the session data to prevent an infinite validation loop
+        const firstError = validationErrors[0];
+        if (firstError.toLowerCase().includes('date')) {
+          updatedSession.data.date = null;
+        } else if (firstError.toLowerCase().includes('time')) {
+          updatedSession.data.time = null;
+        } else if (firstError.toLowerCase().includes('service')) {
+          updatedSession.data.service = null;
+        } else if (firstError.toLowerCase().includes('name')) {
+          updatedSession.data.name = null;
+        }
+
         await saveSession(from, updatedSession);
         return;
       }
